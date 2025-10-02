@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: newsly-backend
+    runtime: node
+    plan: free
+    buildCommand: npm run render-build
+    startCommand: npm run render-start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 24h
+
+databases:
+  - name: newsly-db
+    databaseName: newsly
+    user: newsly_user
+    plan: free
