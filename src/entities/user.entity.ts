@@ -9,6 +9,7 @@ import {
 import { Article } from './article.entity';
 import { Bookmark } from './bookmark.entity';
 import { Like } from './like.entity';
+import { Comment } from './comment.entity';
 
 export enum UserRole {
   USER = 'user',
@@ -90,4 +91,7 @@ export class User {
 
   @OneToMany(() => Like, (like) => like.user)
   likes: Like[];
+
+  @OneToMany(() => Comment, (comment) => comment.user)
+  comments: Comment[];
 }

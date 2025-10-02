@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
@@ -19,6 +20,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { User, UserRole } from '../entities/user.entity';
 
+@ApiTags('articles')
 @Controller('articles')
 export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
@@ -26,6 +28,30 @@ export class ArticlesController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.EDITOR, UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Create a new article' })
+  @ApiBody({ type: CreateArticleDto })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Article created successfully',
+    schema: {
+      example: {
+        success: true,
+        message: 'Article created successfully',
+        data: {
+          id: 'uuid',
+          title: 'Sample Article',
+          slug: 'sample-article',
+          content: 'Article content...',
+          status: 'draft',
+          authorId: 'uuid',
+          createdAt: '2025-01-01T00:00:00.000Z'
+        }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Editor role required' })
   async create(
     @Body() createArticleDto: CreateArticleDto,
     @GetUser() user: User,
@@ -39,6 +65,58 @@ export class ArticlesController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all published articles with pagination and filters' })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number', example: 1 })
+  @ApiQuery({ name: 'limit', required: false, description: 'Items per page', example: 20 })
+  @ApiQuery({ name: 'categoryId', required: false, description: 'Filter by category ID' })
+  @ApiQuery({ name: 'search', required: false, description: 'Search in title and content' })
+  @ApiQuery({ name: 'sort', required: false, description: 'Sort field', example: 'published_at' })
+  @ApiQuery({ name: 'order', required: false, description: 'Sort order', example: 'DESC' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Articles retrieved successfully',
+    schema: {
+      example: {
+        success: true,
+        data: {
+          articles: [
+            {
+              id: 'uuid',
+              title: 'Sample Article',
+              slug: 'sample-article',
+              excerpt: 'Article excerpt...',
+              coverImage: 'https://example.com/image.jpg',
+              status: 'published',
+              publishedAt: '2025-01-01T00:00:00.000Z',
+              readingTime: 5,
+              views: 100,
+              likeCount: 10,
+              tags: ['tech', 'news'],
+              author: {
+                id: 'uuid',
+                name: 'John Doe',
+                username: 'johndoe',
+                avatar: null
+              },
+              category: {
+                id: 'uuid',
+                name: 'Technology',
+                slug: 'technology'
+              }
+            }
+          ],
+          pagination: {
+            current_page: 1,
+            total_pages: 5,
+            total_items: 100,
+            items_per_page: 20,
+            has_next: true,
+            has_prev: false
+          }
+        }
+      }
+    }
+  })
   async findAll(@Query() queryDto: QueryArticlesDto) {
     const result = await this.articlesService.findAll(queryDto);
     return {
@@ -48,6 +126,34 @@ export class ArticlesController {
   }
 
   @Get('trending')
+  @ApiOperation({ summary: 'Get trending articles' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Number of articles to return', example: 10 })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Trending articles retrieved successfully',
+    schema: {
+      example: {
+        success: true,
+        data: {
+          articles: [
+            {
+              id: 'uuid',
+              title: 'Trending Article',
+              slug: 'trending-article',
+              excerpt: 'Article excerpt...',
+              views: 1000,
+              likeCount: 50,
+              author: {
+                id: 'uuid',
+                name: 'John Doe',
+                username: 'johndoe'
+              }
+            }
+          ]
+        }
+      }
+    }
+  })
   async getTrending(@Query('limit') limit?: number) {
     const articles = await this.articlesService.getTrending(limit);
     return {

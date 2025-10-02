@@ -7,6 +7,8 @@ import { getDatabaseConfig } from './config/database.config';
 import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ArticlesModule } from './articles/articles.module';
+import { LikesModule } from './likes/likes.module';
+import { CommentsModule } from './comments/comments.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { ArticlesModule } from './articles/articles.module';
     AuthModule,
     CategoriesModule,
     ArticlesModule,
+    LikesModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

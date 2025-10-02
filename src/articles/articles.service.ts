@@ -37,7 +37,7 @@ export class ArticlesService {
 
     const article = this.articleRepository.create({
       ...createArticleDto,
-      authorId: author.id,
+      author: { id: author.id } as any,
       readingTime,
       publishedAt: createArticleDto.status === ArticleStatus.PUBLISHED ? new Date() : undefined,
     });
@@ -98,7 +98,7 @@ export class ArticlesService {
     }
 
     if (authorId) {
-      queryBuilder.andWhere('article.authorId = :authorId', { authorId });
+      queryBuilder.andWhere('author.id = :authorId', { authorId });
     }
 
     if (search) {
@@ -197,7 +197,7 @@ export class ArticlesService {
     const article = await this.findOne(id);
 
     // Check permissions
-    if (article.authorId !== user.id && ![UserRole.ADMIN, UserRole.SUPER_ADMIN].includes(user.role)) {
+    if (article.author.id !== user.id && ![UserRole.ADMIN, UserRole.SUPER_ADMIN].includes(user.role)) {
       throw new ForbiddenException('You can only update your own articles');
     }
 
@@ -231,7 +231,7 @@ export class ArticlesService {
     const article = await this.findOne(id);
 
     // Check permissions
-    if (article.authorId !== user.id && ![UserRole.ADMIN, UserRole.SUPER_ADMIN].includes(user.role)) {
+    if (article.author.id !== user.id && ![UserRole.ADMIN, UserRole.SUPER_ADMIN].includes(user.role)) {
       throw new ForbiddenException('You can only delete your own articles');
     }
 

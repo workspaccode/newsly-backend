@@ -12,6 +12,7 @@ import { User } from './user.entity';
 import { Category } from './category.entity';
 import { Bookmark } from './bookmark.entity';
 import { Like } from './like.entity';
+import { Comment } from './comment.entity';
 
 export enum ArticleStatus {
   DRAFT = 'draft',
@@ -65,29 +66,25 @@ export class Article {
   publishAt: Date; // Scheduled publish time
 
   @CreateDateColumn()
-  createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
 
   // Relations
-  @ManyToOne(() => User, (user) => user.articles, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'authorId' })
+  @ManyToOne(() => User, (user) => user.articles)
+  @JoinColumn({ name: 'author_id' })
   author: User;
 
-  @Column()
-  authorId: string;
-
   @ManyToOne(() => Category, (category) => category.articles, { nullable: true })
-  @JoinColumn({ name: 'categoryId' })
-  category: Category;
-
-  @Column({ nullable: true })
-  categoryId: string;
+  @JoinColumn({ name: 'category_id' })
+  category?: Category;
 
   @OneToMany(() => Bookmark, (bookmark) => bookmark.article)
   bookmarks: Bookmark[];
 
   @OneToMany(() => Like, (like) => like.article)
   likes: Like[];
+
+  @OneToMany(() => Comment, (comment) => comment.article)
+  comments: Comment[];
 }
